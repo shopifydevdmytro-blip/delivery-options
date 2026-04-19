@@ -1,0 +1,90 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "60.00",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 2,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/6",
+              "product": {
+                "id": "gid://shopify/Product/6",
+                "title": "Toaster",
+                "handle": "toaster",
+                "metafield": {
+                  "value": "small_appliances"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "NG1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "next-day-parcel",
+                "title": "Next Day Parcel Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "4.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "2 Man Delivery Team",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "next-day-parcel"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "free-delivery",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

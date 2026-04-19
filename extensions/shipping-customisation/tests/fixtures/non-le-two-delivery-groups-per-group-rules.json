@@ -1,0 +1,157 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "1540.00",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [],
+        "deliveryGroups": [
+          {
+            "cartLines": [
+              {
+                "quantity": 1,
+                "cost": {
+                  "subtotalAmount": {
+                    "amount": "40.00",
+                    "currencyCode": "GBP"
+                  }
+                },
+                "merchandise": {
+                  "__typename": "ProductVariant",
+                  "id": "gid://shopify/ProductVariant/20",
+                  "product": {
+                    "id": "gid://shopify/Product/20",
+                    "title": "Kettle",
+                    "handle": "kettle",
+                    "metafield": {
+                      "value": "small_appliances"
+                    }
+                  }
+                }
+              }
+            ],
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "NG1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "small-free-delivery",
+                "title": "Free Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "small-next-day-parcel",
+                "title": "Next Day Parcel Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "4.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "small-pallet-standard",
+                "title": "Pallet Delivery (Kurbside Only & 1 - 3 Working Day Delivery)",
+                "description": "Kurbside pallet delivery",
+                "cost": {
+                  "amount": "39.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          },
+          {
+            "cartLines": [
+              {
+                "quantity": 1,
+                "cost": {
+                  "subtotalAmount": {
+                    "amount": "1500.00",
+                    "currencyCode": "GBP"
+                  }
+                },
+                "merchandise": {
+                  "__typename": "ProductVariant",
+                  "id": "gid://shopify/ProductVariant/21",
+                  "product": {
+                    "id": "gid://shopify/Product/21",
+                    "title": "American Fridge Freezer",
+                    "handle": "american-fridge-freezer",
+                    "metafield": {
+                      "value": "american_fridge_freezers"
+                    }
+                  }
+                }
+              }
+            ],
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "NG1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "fridge-two-man-standard",
+                "title": "1/2 Man Delivery Team (2 - 10 Working Days)",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "fridge-pallet-standard",
+                "title": "Pallet Delivery (Kurbside Only & 1 - 3 Working Day Delivery)",
+                "description": "Kurbside pallet delivery",
+                "cost": {
+                  "amount": "39.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "small-free-delivery"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "small-pallet-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "small-next-day-parcel",
+            "index": 0
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "fridge-two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "fridge-pallet-standard",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

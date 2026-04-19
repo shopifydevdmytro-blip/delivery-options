@@ -1,0 +1,75 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "499.99",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/11",
+              "product": {
+                "id": "gid://shopify/Product/11",
+                "title": "Washer",
+                "handle": "washer",
+                "metafield": {
+                  "value": "freestanding_laundry"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "FR",
+              "zip": "75001"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "two-man-standard",
+                "title": "2 Man Delivery Team",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "pallet-standard",
+                "title": "Pallet Delivery",
+                "description": "Kerbside pallet delivery",
+                "cost": {
+                  "amount": "39.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "pallet-standard"
+          }
+        }
+      ]
+    }
+  }
+}

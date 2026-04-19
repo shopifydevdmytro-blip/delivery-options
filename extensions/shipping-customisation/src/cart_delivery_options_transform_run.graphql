@@ -1,0 +1,65 @@
+query CartDeliveryOptionsTransformRunInput {
+  cart {
+    cost {
+      subtotalAmount {
+        amount
+        currencyCode
+      }
+    }
+    lines {
+      quantity
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+          product {
+            id
+            title
+            handle
+            metafield(namespace: "custom", key: "delivery_group") {
+              value
+            }
+          }
+        }
+      }
+    }
+    deliveryGroups {
+      cartLines {
+        quantity
+        cost {
+          subtotalAmount {
+            amount
+            currencyCode
+          }
+        }
+        merchandise {
+          __typename
+          ... on ProductVariant {
+            id
+            product {
+              id
+              title
+              handle
+              metafield(namespace: "custom", key: "delivery_group") {
+                value
+              }
+            }
+          }
+        }
+      }
+      deliveryAddress {
+        countryCode
+        zip
+      }
+      deliveryOptions {
+        handle
+        title
+        description
+        cost {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+api_version = "2026-01"
+
+[[extensions]]
+name = "Delivery postcode banner"
+handle = "delivery-postcode-banner"
+uid = "d94b0cb2-8be9-89ef-1b66-73e20a6d46c16f7879c3"
+type = "ui_extension"
+
+  [[extensions.targeting]]
+  target = "purchase.checkout.block.render"
+  module = "./src/Checkout.jsx"

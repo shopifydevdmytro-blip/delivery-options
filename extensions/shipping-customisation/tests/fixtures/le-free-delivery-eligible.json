@@ -1,0 +1,90 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "99.99",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/37",
+              "product": {
+                "id": "gid://shopify/Product/37",
+                "title": "Free Delivery Product",
+                "handle": "free-delivery-product",
+                "metafield": {
+                  "value": "free_delivery_eligible"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "LE1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Free delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "ground-floor-free",
+                "title": "Free Ground Floor Delivery",
+                "description": "Ground floor only",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "1/2 Man Delivery Team (2 - 10 Working Days)",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "ground-floor-free"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "free-delivery",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

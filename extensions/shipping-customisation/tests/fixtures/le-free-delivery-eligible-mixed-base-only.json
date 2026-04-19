@@ -1,0 +1,105 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "599.98",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/38",
+              "product": {
+                "id": "gid://shopify/Product/38",
+                "title": "Free Delivery Product",
+                "handle": "free-delivery-product",
+                "metafield": {
+                  "value": "free_delivery_eligible"
+                }
+              }
+            }
+          },
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/39",
+              "product": {
+                "id": "gid://shopify/Product/39",
+                "title": "Washer",
+                "handle": "washer",
+                "metafield": {
+                  "value": "freestanding_laundry"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "LE1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Free delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "ground-floor-free",
+                "title": "Free Ground Floor Delivery",
+                "description": "Ground floor only",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "installation-2499",
+                "title": "Install Your Appliance (Must be a like for like appliance & existing pipework all ready)",
+                "description": "Professional fitting",
+                "cost": {
+                  "amount": "24.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-delivery"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "installation-2499"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "ground-floor-free",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "549.98",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/3",
+              "product": {
+                "id": "gid://shopify/Product/3",
+                "title": "Washer",
+                "handle": "washer",
+                "metafield": {
+                  "value": "freestanding_laundry"
+                }
+              }
+            }
+          },
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/4",
+              "product": {
+                "id": "gid://shopify/Product/4",
+                "title": "Toaster",
+                "handle": "toaster",
+                "metafield": {
+                  "value": "small_appliances"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "LE1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "ground-floor-free",
+                "title": "Free Ground Floor Delivery",
+                "description": "Ground floor only",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "installation-2499",
+                "title": "Installation",
+                "description": "Professional fitting",
+                "cost": {
+                  "amount": "24.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "full-service-3499",
+                "title": "Full Service",
+                "description": "Delivery installation disposal",
+                "cost": {
+                  "amount": "34.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "free-delivery-small",
+                "title": "Free Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "installation-2499"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "full-service-3499"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-delivery-small"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "ground-floor-free",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

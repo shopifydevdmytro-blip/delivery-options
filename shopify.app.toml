@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "ba1b736a44e654ee46bc820211480e6c"
+name = "delivery-options-postcode"
+application_url = "https://example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_cart_transforms,read_checkout_branding_settings,read_delivery_customizations,read_locations,read_markets,read_metaobject_definitions,read_metaobjects,read_products,read_shipping,read_validations,write_cart_transforms,write_checkout_branding_settings,write_delivery_customizations,write_metaobject_definitions,write_metaobjects,write_products,write_shipping,write_validations"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]

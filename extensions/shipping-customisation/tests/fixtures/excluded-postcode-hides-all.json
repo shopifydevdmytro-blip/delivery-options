@@ -1,0 +1,89 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "299.99",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/1",
+              "product": {
+                "id": "gid://shopify/Product/1",
+                "title": "Washer",
+                "handle": "washer",
+                "metafield": {
+                  "value": "freestanding_laundry"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "AB10 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-ground-floor",
+                "title": "Free Ground Floor Delivery",
+                "description": "Ground floor service",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "installation-2499",
+                "title": "Installation",
+                "description": "Professional fitting",
+                "cost": {
+                  "amount": "24.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "2 Man Delivery Team",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-ground-floor"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "installation-2499"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        }
+      ]
+    }
+  }
+}

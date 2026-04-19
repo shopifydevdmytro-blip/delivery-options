@@ -1,0 +1,10 @@
+{
+  "name": "checkout-postcode-banner",
+  "private": true,
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "shopify app build extension --path ."
+  }
+}

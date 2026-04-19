@@ -1,0 +1,90 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "40.00",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/7",
+              "product": {
+                "id": "gid://shopify/Product/7",
+                "title": "Kettle",
+                "handle": "kettle",
+                "metafield": {
+                  "value": "small_appliances"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "CV1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "next-day-parcel",
+                "title": "Next Day Parcel Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "4.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "2 Man Delivery Team",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-delivery"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "next-day-parcel",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

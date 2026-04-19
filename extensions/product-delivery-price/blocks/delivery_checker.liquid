@@ -1,0 +1,139 @@
+{% liquid
+  assign selected_product = block.settings.product | default: product
+  assign delivery_group = selected_product.metafields.custom.delivery_group.value | default: selected_product.metafields.custom.delivery_group
+  assign selected_variant = selected_product.selected_or_first_available_variant
+  assign product_price_cents = selected_variant.price | default: selected_product.price | default: 0
+  assign checker_context = 'product'
+
+  if template.name == 'collection' and collection != blank
+    assign checker_context = 'collection'
+  endif
+%}
+
+<div
+  class="delivery-checker"
+  data-delivery-checker
+  data-delivery-checker-id="{{ block.id }}"
+  data-delivery-checker-context="{{ checker_context }}"
+  data-delivery-group="{{ delivery_group | escape }}"
+  data-product-price-cents="{{ product_price_cents }}"
+>
+  <div class="delivery-checker__header">
+    <h3 class="delivery-checker__heading">{{ block.settings.heading | escape }}</h3>
+    {% if block.settings.description != blank %}
+      <p class="delivery-checker__description">{{ block.settings.description | escape }}</p>
+    {% endif %}
+  </div>
+
+  <div class="delivery-checker__form">
+    <label class="delivery-checker__label" for="DeliveryCheckerPostcode-{{ block.id }}">
+      Postcode
+    </label>
+    <div class="delivery-checker__controls">
+      <input
+        id="DeliveryCheckerPostcode-{{ block.id }}"
+        class="delivery-checker__input"
+        data-delivery-checker-input
+        type="text"
+        inputmode="text"
+        autocomplete="postal-code"
+        placeholder="e.g. LE1 2AB"
+      >
+      <button
+        class="delivery-checker__button"
+        data-delivery-checker-button
+        type="button"
+      >
+        {{ block.settings.button_label | escape }}
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="delivery-checker__message"
+    data-delivery-checker-message
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <div
+    class="delivery-checker__results"
+    data-delivery-checker-results
+    aria-live="polite"
+  ></div>
+
+  <script type="application/json" data-delivery-checker-products>
+    [
+      {% if checker_context == 'collection' %}
+        {% paginate collection.products by block.settings.products_per_page %}
+          {% for collection_product in collection.products %}
+            {% liquid
+              assign collection_delivery_group = collection_product.metafields.custom.delivery_group.value | default: collection_product.metafields.custom.delivery_group
+              assign collection_variant = collection_product.selected_or_first_available_variant
+              assign collection_price_cents = collection_variant.price | default: collection_product.price | default: 0
+            %}
+            {
+              "handle": {{ collection_product.handle | json }},
+              "title": {{ collection_product.title | json }},
+              "url": {{ collection_product.url | within: collection | json }},
+              "deliveryGroup": {{ collection_delivery_group | default: '' | json }},
+              "priceCents": {{ collection_price_cents | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        {% endpaginate %}
+      {% elsif selected_product != blank %}
+        {
+          "handle": {{ selected_product.handle | json }},
+          "title": {{ selected_product.title | json }},
+          "url": {{ selected_product.url | json }},
+          "deliveryGroup": {{ delivery_group | default: '' | json }},
+          "priceCents": {{ product_price_cents | json }}
+        }
+      {% endif %}
+    ]
+  </script>
+</div>
+
+{% schema %}
+{
+  "name": "Delivery checker",
+  "target": "section",
+  "stylesheet": "delivery-checker.css",
+  "javascript": "delivery-checker.js",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "autofill": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Check delivery for your area"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "Enter your postcode to see the delivery options available for this product."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Check delivery"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Collection products per page",
+      "min": 24,
+      "max": 48,
+      "step": 12,
+      "default": 24
+    }
+  ]
+}
+{% endschema %}
