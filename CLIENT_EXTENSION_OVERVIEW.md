@@ -27,6 +27,12 @@ integrated_refrigeration
 small_appliances
 free_delivery_eligible
 The function also supports storefront aliases such as dual_fuel_range and american_fridge_freezer. These are normalised internally to the checkout delivery group names.
+
+Products can also use a separate optional metafield.
+Namespace: custom
+Key: high_margin_free_delivery
+
+This is not a delivery group. It is a separate product flag.
 ### Delivery zones
 The function classifies delivery addresses into three main zones.
 LE postcodes are treated as the local delivery area and can have additional services.
@@ -40,6 +46,10 @@ For American fridge freezer products outside LE, the checkout can be restricted 
 For small appliances, the checkout can show Free Delivery or Next Day Parcel Delivery depending on the product or cart value.
 For free_delivery_eligible products, the checkout can show Free Delivery when that is the only delivery group in the delivery group being rated.
 If free_delivery_eligible is mixed with another delivery group, Rest of UK checkout uses the standard 1/2 Man Delivery Team and Pallet Delivery fallback.
+For products marked with custom.high_margin_free_delivery, checkout keeps the normal LE local services for LE postcodes.
+For products marked with custom.high_margin_free_delivery outside LE, checkout can show Free Delivery.
+If all products in a local LE delivery group are marked with custom.high_margin_free_delivery, checkout can keep the combined local service set instead of falling back to base-only delivery.
+If high margin free delivery products are mixed with regular products outside LE, the standard mixed basket rules still apply.
 For restricted postcodes, the function can hide all checkout delivery methods so the customer cannot proceed with an invalid delivery option.
 ### Important note
 The Delivery Customization Function cannot create new shipping rates or change shipping prices dynamically.
@@ -73,6 +83,7 @@ On product pages, the result area lists available delivery services and prices f
 On collection pages, the result area confirms how many product cards were updated, and each product card receives its own list of delivery services and prices.
 ### How it works
 The block reads the product delivery group from product.metafields.custom.delivery_group.
+The block can also read product.metafields.custom.high_margin_free_delivery.
 On collection pages, the block outputs a JSON dataset for the current visible collection page. Each item contains the product handle, title, URL, delivery group, and price.
 The postcode is entered by the customer directly on the storefront page.
 The calculation runs entirely in the browser. No backend request is made.
@@ -105,6 +116,7 @@ Fourth, the function hides delivery rates that should not be available.
 Finally, if the postcode is restricted, the Checkout Postcode Banner explains the issue to the customer.
 ## Data setup required in Shopify
 For the extensions to work correctly, Shopify must be configured with product metafields using custom.delivery_group.
+If the high margin free delivery rule is needed for a product, Shopify should also set custom.high_margin_free_delivery for that product.
 Shopify must also have shipping rates with names and prices that match the delivery service configuration.
 The Theme App Extension block should be added to the product page template and can also be added above the collection section on collection templates.
 For collection templates, the block products per page setting should match the collection section products per page setting.
