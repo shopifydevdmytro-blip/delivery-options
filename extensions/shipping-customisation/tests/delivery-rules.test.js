@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { normalizeDeliveryGroupKey } from "../src/delivery-rules";
+import {
+  isHighMarginFreeDeliveryValue,
+  normalizeDeliveryGroupKey,
+} from "../src/delivery-rules";
 
 describe("delivery group rules", () => {
   test("normalizes storefront delivery group aliases", () => {
@@ -26,5 +29,14 @@ describe("delivery group rules", () => {
     expect(normalizeDeliveryGroupKey("free_delivery_eligible")).toBe(
       "free_delivery_eligible",
     );
+  });
+
+  test("accepts truthy values for high margin free delivery metafield", () => {
+    expect(isHighMarginFreeDeliveryValue("true")).toBe(true);
+    expect(isHighMarginFreeDeliveryValue("YES")).toBe(true);
+    expect(isHighMarginFreeDeliveryValue("high_margin_free_delivery")).toBe(
+      true,
+    );
+    expect(isHighMarginFreeDeliveryValue("false")).toBe(false);
   });
 });

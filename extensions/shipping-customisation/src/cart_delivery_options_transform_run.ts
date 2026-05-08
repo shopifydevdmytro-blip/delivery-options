@@ -1,8 +1,10 @@
 import {
+  buildFreeDeliveryExpectedService,
   buildExpectedService,
   buildMultiGroupLocalService,
   buildRestOfUkServices,
   getDeliveryGroupRule,
+  isHighMarginFreeDeliveryValue,
   normalizeDeliveryGroupKey,
   type DeliveryGroupKey,
   type ExpectedService,
@@ -10,7 +12,6 @@ import {
 } from "./delivery-rules";
 import {
   classifyDeliveryLocation,
-  type DeliveryLocationInput,
 } from "../../shared/delivery/postcodes";
 
 type Money = {
@@ -39,6 +40,7 @@ type Product = {
   title: string;
   handle: string;
   metafield?: ProductMetafield;
+  highMarginFreeDeliveryMetafield?: ProductMetafield;
 };
 
 type ProductVariantMerchandise = {
@@ -101,6 +103,11 @@ type RunResult = {
 type MatchedService = {
   expectedService: ExpectedService;
   preparedOption: PreparedDeliveryOption;
+};
+
+type DeliveryProfile = {
+  deliveryGroups: DeliveryGroupKey[];
+  allHighMarginFreeDelivery: boolean;
 };
 
 type PreparedDeliveryOption = {
@@ -166,12 +173,12 @@ function addDeliveryGroupOperations({
     deliveryGroup,
     fallbackCartLines,
   );
-  const cartDeliveryGroups = getCartDeliveryGroups(deliveryGroupCartLines);
+  const deliveryProfile = getDeliveryProfile(deliveryGroupCartLines);
   const expectedServices =
     deliveryZone === "le_local"
-      ? buildLeExpectedServices(cartDeliveryGroups)
+      ? buildLeExpectedServices(deliveryProfile)
       : buildRestOfUkExpectedServices(
-          cartDeliveryGroups,
+          deliveryProfile,
           getCartLinesSubtotalAmount(deliveryGroupCartLines) ??
             fallbackSubtotalAmount,
         );
@@ -225,13 +232,17 @@ function addHideAllDeliveryOptionsOperations(
 }
 
 function buildLeExpectedServices(
-  cartDeliveryGroups: DeliveryGroupKey[],
+  deliveryProfile: DeliveryProfile,
 ): ExpectedService[] {
-  if (cartDeliveryGroups.length > 1) {
+  if (deliveryProfile.deliveryGroups.length > 1) {
+    if (deliveryProfile.allHighMarginFreeDelivery) {
+      return buildMergedLeExpectedServices(deliveryProfile.deliveryGroups);
+    }
+
     return [buildMultiGroupLocalService()];
   }
 
-  const selectedDeliveryGroup = cartDeliveryGroups[0] ?? "unconfigured";
+  const selectedDeliveryGroup = deliveryProfile.deliveryGroups[0] ?? "unconfigured";
   const localServices = getDeliveryGroupRule(selectedDeliveryGroup).localServices;
   const expectedServices: ExpectedService[] = [];
 
@@ -243,12 +254,16 @@ function buildLeExpectedServices(
 }
 
 function buildRestOfUkExpectedServices(
-  cartDeliveryGroups: DeliveryGroupKey[],
+  deliveryProfile: DeliveryProfile,
   subtotalAmount: number,
 ): ExpectedService[] {
+  if (deliveryProfile.allHighMarginFreeDelivery) {
+    return [buildFreeDeliveryExpectedService()];
+  }
+
   const restOfUkRuleKinds: RestOfUkRuleKind[] = [];
 
-  for (const deliveryGroup of cartDeliveryGroups) {
+  for (const deliveryGroup of deliveryProfile.deliveryGroups) {
     restOfUkRuleKinds.push(getDeliveryGroupRule(deliveryGroup).restOfUkRule);
   }
 
@@ -259,6 +274,33 @@ function buildRestOfUkExpectedServices(
         : [getDeliveryGroupRule("unconfigured").restOfUkRule],
     subtotalAmount,
   });
+}
+
+function buildMergedLeExpectedServices(
+  cartDeliveryGroups: DeliveryGroupKey[],
+): ExpectedService[] {
+  const expectedServices: ExpectedService[] = [];
+  const seen = new Set<string>();
+
+  for (const deliveryGroup of cartDeliveryGroups) {
+    const localServices = getDeliveryGroupRule(deliveryGroup).localServices;
+
+    for (const localService of localServices) {
+      const expectedService = buildExpectedService(localService);
+      const dedupeKey = `${expectedService.normalizedTitle}::${formatPriceKey(
+        expectedService.price,
+      )}`;
+
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+
+      seen.add(dedupeKey);
+      expectedServices.push(expectedService);
+    }
+  }
+
+  return expectedServices;
 }
 
 function matchExpectedServices(
@@ -340,14 +382,17 @@ function isMatchedDeliveryOption(
   return false;
 }
 
-function getCartDeliveryGroups(lines: CartLine[]): DeliveryGroupKey[] {
+function getDeliveryProfile(lines: CartLine[]): DeliveryProfile {
   const deliveryGroups: DeliveryGroupKey[] = [];
+  let hasProductVariant = false;
+  let allHighMarginFreeDelivery = true;
 
   for (const line of lines) {
     if (!isProductVariantMerchandise(line.merchandise)) {
       continue;
     }
 
+    hasProductVariant = true;
     const deliveryGroup = normalizeDeliveryGroupKey(
       line.merchandise.product.metafield?.value,
     );
@@ -355,13 +400,25 @@ function getCartDeliveryGroups(lines: CartLine[]): DeliveryGroupKey[] {
     if (!hasCartDeliveryGroup(deliveryGroups, deliveryGroup)) {
       deliveryGroups.push(deliveryGroup);
     }
+
+    if (
+      !isHighMarginFreeDeliveryValue(
+        line.merchandise.product.highMarginFreeDeliveryMetafield?.value,
+      )
+    ) {
+      allHighMarginFreeDelivery = false;
+    }
   }
 
   if (deliveryGroups.length === 0) {
     deliveryGroups.push("unconfigured");
+    allHighMarginFreeDelivery = false;
   }
 
-  return deliveryGroups;
+  return {
+    deliveryGroups,
+    allHighMarginFreeDelivery: hasProductVariant && allHighMarginFreeDelivery,
+  };
 }
 
 function getDeliveryGroupCartLines(
@@ -408,6 +465,10 @@ function hasCartDeliveryGroup(
 
 function pricesMatch(left: number, right: number): boolean {
   return Math.abs(left - right) < 0.01;
+}
+
+function formatPriceKey(value?: number): string {
+  return typeof value === "number" ? value.toFixed(2) : "";
 }
 
 function normalizeText(value?: string | null): string {

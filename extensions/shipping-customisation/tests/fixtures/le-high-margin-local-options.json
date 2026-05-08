@@ -1,0 +1,169 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "899.99",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/104",
+              "product": {
+                "id": "gid://shopify/Product/104",
+                "title": "Premium Integrated Washer",
+                "handle": "premium-integrated-washer",
+                "metafield": {
+                  "value": "integrated_laundry"
+                },
+                "highMarginFreeDeliveryMetafield": {
+                  "value": "true"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "LE2 5ZZ"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "ground-floor-free",
+                "title": "Free Ground Floor Delivery",
+                "description": "Ground floor only",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "unpack-packaging",
+                "title": "Unpack & Dispose Packaging",
+                "description": "Unpack and dispose packaging",
+                "cost": {
+                  "amount": "9.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "first-floor-2999",
+                "title": "1st Floor Delivery (No Lift)",
+                "description": "Carry to first floor with no lift",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "second-floor-manual",
+                "title": "2nd Floor Or More Delivery (No Lift) - Our Sales Team Will Get In Touch",
+                "description": "Manual confirmation required",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "installation-6999",
+                "title": "Install Your Appliance (Must be a like for like appliance & existing pipework all ready)",
+                "description": "Professional fitting",
+                "cost": {
+                  "amount": "69.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "disposal-1499",
+                "title": "Disposal Of Old Appliance (Must Be Disconnected)",
+                "description": "Remove old appliance",
+                "cost": {
+                  "amount": "14.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "full-service-7999",
+                "title": "Full Service (Delivery / Fitting & Disposal Of Old Appliance / Doesn't Include Disposal Of Packaging)",
+                "description": "Delivery fitting and disposal of old appliance",
+                "cost": {
+                  "amount": "79.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Free delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-delivery"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "ground-floor-free",
+            "index": 0
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "unpack-packaging",
+            "index": 1
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "first-floor-2999",
+            "index": 2
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "second-floor-manual",
+            "index": 3
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "installation-6999",
+            "index": 4
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "disposal-1499",
+            "index": 5
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "full-service-7999",
+            "index": 6
+          }
+        }
+      ]
+    }
+  }
+}

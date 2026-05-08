@@ -1,0 +1,93 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "1299.99",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/101",
+              "product": {
+                "id": "gid://shopify/Product/101",
+                "title": "Premium American Fridge",
+                "handle": "premium-american-fridge",
+                "metafield": {
+                  "value": "american_fridge_freezers"
+                },
+                "highMarginFreeDeliveryMetafield": {
+                  "value": "true"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "NG1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Free delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "pallet-standard",
+                "title": "Pallet Delivery (Kurbside Only & 1 - 3 Working Day Delivery)",
+                "description": "Kurbside pallet delivery",
+                "cost": {
+                  "amount": "39.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "1/2 Man Delivery Team (2 - 10 Working Days)",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "pallet-standard"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "two-man-standard"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "free-delivery",
+            "index": 0
+          }
+        }
+      ]
+    }
+  }
+}

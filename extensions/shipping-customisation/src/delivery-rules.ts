@@ -404,6 +404,22 @@ export function buildMultiGroupLocalService(): ExpectedService {
   });
 }
 
+export function buildFreeDeliveryExpectedService(): ExpectedService {
+  return buildExpectedService(SMALL_APPLIANCE_FREE_SERVICE);
+}
+
+export function isHighMarginFreeDeliveryValue(value?: string | null): boolean {
+  const normalized = (value ?? "").trim().toLowerCase();
+
+  return (
+    normalized === "true" ||
+    normalized === "1" ||
+    normalized === "yes" ||
+    normalized === "on" ||
+    normalized === "high_margin_free_delivery"
+  );
+}
+
 export function buildRestOfUkServices({
   restOfUkRuleKinds,
   subtotalAmount,

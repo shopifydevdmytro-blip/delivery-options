@@ -1,6 +1,7 @@
 {% liquid
   assign selected_product = block.settings.product | default: product
   assign delivery_group = selected_product.metafields.custom.delivery_group.value | default: selected_product.metafields.custom.delivery_group
+  assign high_margin_free_delivery = selected_product.metafields.custom.high_margin_free_delivery.value | default: selected_product.metafields.custom.high_margin_free_delivery
   assign selected_variant = selected_product.selected_or_first_available_variant
   assign product_price_cents = selected_variant.price | default: selected_product.price | default: 0
   assign checker_context = 'product'
@@ -8,14 +9,23 @@
   if template.name == 'collection' and collection != blank
     assign checker_context = 'collection'
   endif
+
+  if checker_context == 'collection'
+    assign design_style = block.settings.collection_design_style | default: block.settings.design_style | default: 'red_outline'
+  else
+    assign design_style = block.settings.product_design_style | default: 'classic'
+  endif
+
+  assign design_class = design_style | replace: '_', '-'
 %}
 
 <div
-  class="delivery-checker"
+  class="delivery-checker delivery-checker--{{ checker_context }} delivery-checker--{{ design_class }}"
   data-delivery-checker
   data-delivery-checker-id="{{ block.id }}"
   data-delivery-checker-context="{{ checker_context }}"
   data-delivery-group="{{ delivery_group | escape }}"
+  data-high-margin-free-delivery="{{ high_margin_free_delivery | escape }}"
   data-product-price-cents="{{ product_price_cents }}"
 >
   <div class="delivery-checker__header">
@@ -69,6 +79,7 @@
           {% for collection_product in collection.products %}
             {% liquid
               assign collection_delivery_group = collection_product.metafields.custom.delivery_group.value | default: collection_product.metafields.custom.delivery_group
+              assign collection_high_margin_free_delivery = collection_product.metafields.custom.high_margin_free_delivery.value | default: collection_product.metafields.custom.high_margin_free_delivery
               assign collection_variant = collection_product.selected_or_first_available_variant
               assign collection_price_cents = collection_variant.price | default: collection_product.price | default: 0
             %}
@@ -77,6 +88,7 @@
               "title": {{ collection_product.title | json }},
               "url": {{ collection_product.url | within: collection | json }},
               "deliveryGroup": {{ collection_delivery_group | default: '' | json }},
+              "highMarginFreeDelivery": {{ collection_high_margin_free_delivery | default: '' | json }},
               "priceCents": {{ collection_price_cents | json }}
             }{% unless forloop.last %},{% endunless %}
           {% endfor %}
@@ -87,6 +99,7 @@
           "title": {{ selected_product.title | json }},
           "url": {{ selected_product.url | json }},
           "deliveryGroup": {{ delivery_group | default: '' | json }},
+          "highMarginFreeDelivery": {{ high_margin_free_delivery | default: '' | json }},
           "priceCents": {{ product_price_cents | json }}
         }
       {% endif %}
@@ -124,6 +137,78 @@
       "id": "button_label",
       "label": "Button label",
       "default": "Check delivery"
+    },
+    {
+      "type": "select",
+      "id": "product_design_style",
+      "label": "Product page design",
+      "default": "classic",
+      "options": [
+        {
+          "value": "classic",
+          "label": "Classic"
+        },
+        {
+          "value": "red_outline",
+          "label": "Red outline"
+        },
+        {
+          "value": "red_outline_soft",
+          "label": "Red outline soft"
+        },
+        {
+          "value": "red_outline_badge",
+          "label": "Red outline badge"
+        },
+        {
+          "value": "red_outline_bold",
+          "label": "Red outline bold"
+        },
+        {
+          "value": "red_header",
+          "label": "Red header"
+        },
+        {
+          "value": "red_bar",
+          "label": "Red compact bar"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "collection_design_style",
+      "label": "Collection page design",
+      "default": "red_outline",
+      "options": [
+        {
+          "value": "red_outline",
+          "label": "Red outline"
+        },
+        {
+          "value": "red_outline_soft",
+          "label": "Red outline soft"
+        },
+        {
+          "value": "red_outline_badge",
+          "label": "Red outline badge"
+        },
+        {
+          "value": "red_outline_bold",
+          "label": "Red outline bold"
+        },
+        {
+          "value": "red_header",
+          "label": "Red header"
+        },
+        {
+          "value": "red_bar",
+          "label": "Red compact bar"
+        },
+        {
+          "value": "classic",
+          "label": "Classic"
+        }
+      ]
     },
     {
       "type": "range",

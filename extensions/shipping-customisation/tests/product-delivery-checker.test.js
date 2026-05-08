@@ -124,6 +124,36 @@ describe("product delivery checker storefront rules", () => {
     });
   });
 
+  test("shows Free Delivery outside LE for high margin free delivery products", () => {
+    expect(
+      checker.calculateDeliveryResult({
+        group: "american_fridge_freezers",
+        highMarginFreeDelivery: "true",
+        postcode: "NG1 1AA",
+        price: 999,
+      }).services[0],
+    ).toMatchObject({
+      price: 0,
+      title: "Free Delivery",
+    });
+  });
+
+  test("keeps LE local services for high margin free delivery products", () => {
+    const result = checker.calculateDeliveryResult({
+      group: "integrated_laundry",
+      highMarginFreeDelivery: "true",
+      postcode: "LE1 2AB",
+      price: 799,
+    });
+
+    expect(result.services.map((service) => service.title).join(" | ")).toContain(
+      "Install Your Appliance",
+    );
+    expect(result.services.map((service) => service.title)).not.toEqual([
+      "Free Delivery",
+    ]);
+  });
+
   test("keeps American fridge freezers pallet-only outside LE", () => {
     const result = checker.calculateDeliveryResult({
       group: "american_fridge_freezers",

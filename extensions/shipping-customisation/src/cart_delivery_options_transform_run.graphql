@@ -19,6 +19,9 @@ query CartDeliveryOptionsTransformRunInput {
             metafield(namespace: "custom", key: "delivery_group") {
               value
             }
+            highMarginFreeDeliveryMetafield: metafield(namespace: "custom", key: "high_margin_free_delivery") {
+              value
+            }
           }
         }
       }
@@ -41,6 +44,9 @@ query CartDeliveryOptionsTransformRunInput {
               title
               handle
               metafield(namespace: "custom", key: "delivery_group") {
+                value
+              }
+              highMarginFreeDeliveryMetafield: metafield(namespace: "custom", key: "high_margin_free_delivery") {
                 value
               }
             }

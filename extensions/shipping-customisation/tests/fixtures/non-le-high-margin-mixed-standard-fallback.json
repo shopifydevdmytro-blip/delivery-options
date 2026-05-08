@@ -1,0 +1,123 @@
+{
+  "payload": {
+    "export": "cart-delivery-options-transform-run",
+    "target": "cart.delivery-options.transform.run",
+    "input": {
+      "cart": {
+        "cost": {
+          "subtotalAmount": {
+            "amount": "549.98",
+            "currencyCode": "GBP"
+          }
+        },
+        "lines": [
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/102",
+              "product": {
+                "id": "gid://shopify/Product/102",
+                "title": "Premium Fridge",
+                "handle": "premium-fridge",
+                "metafield": {
+                  "value": "integrated_refrigeration"
+                },
+                "highMarginFreeDeliveryMetafield": {
+                  "value": "true"
+                }
+              }
+            }
+          },
+          {
+            "quantity": 1,
+            "merchandise": {
+              "__typename": "ProductVariant",
+              "id": "gid://shopify/ProductVariant/103",
+              "product": {
+                "id": "gid://shopify/Product/103",
+                "title": "Toaster",
+                "handle": "toaster",
+                "metafield": {
+                  "value": "small_appliances"
+                }
+              }
+            }
+          }
+        ],
+        "deliveryGroups": [
+          {
+            "deliveryAddress": {
+              "countryCode": "GB",
+              "zip": "NG1 1AA"
+            },
+            "deliveryOptions": [
+              {
+                "handle": "free-delivery",
+                "title": "Free Delivery",
+                "description": "Free delivery",
+                "cost": {
+                  "amount": "0.0",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "next-day-parcel",
+                "title": "Next Day Parcel Delivery",
+                "description": "Parcel delivery",
+                "cost": {
+                  "amount": "4.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "pallet-standard",
+                "title": "Pallet Delivery (Kurbside Only & 1 - 3 Working Day Delivery)",
+                "description": "Kurbside pallet delivery",
+                "cost": {
+                  "amount": "39.99",
+                  "currencyCode": "GBP"
+                }
+              },
+              {
+                "handle": "two-man-standard",
+                "title": "1/2 Man Delivery Team (2 - 10 Working Days)",
+                "description": "Standard mainland delivery",
+                "cost": {
+                  "amount": "29.99",
+                  "currencyCode": "GBP"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "output": {
+      "operations": [
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "free-delivery"
+          }
+        },
+        {
+          "deliveryOptionHide": {
+            "deliveryOptionHandle": "next-day-parcel"
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "two-man-standard",
+            "index": 0
+          }
+        },
+        {
+          "deliveryOptionMove": {
+            "deliveryOptionHandle": "pallet-standard",
+            "index": 1
+          }
+        }
+      ]
+    }
+  }
+}
