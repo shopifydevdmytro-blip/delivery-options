@@ -3,19 +3,13 @@ query CartDeliveryOptionsTransformRunInput {
     cost {
       subtotalAmount {
         amount
-        currencyCode
       }
     }
     lines {
-      quantity
       merchandise {
         __typename
         ... on ProductVariant {
-          id
           product {
-            id
-            title
-            handle
             metafield(namespace: "custom", key: "delivery_group") {
               value
             }
@@ -28,21 +22,15 @@ query CartDeliveryOptionsTransformRunInput {
     }
     deliveryGroups {
       cartLines {
-        quantity
         cost {
           subtotalAmount {
             amount
-            currencyCode
           }
         }
         merchandise {
           __typename
           ... on ProductVariant {
-            id
             product {
-              id
-              title
-              handle
               metafield(namespace: "custom", key: "delivery_group") {
                 value
               }
@@ -60,10 +48,8 @@ query CartDeliveryOptionsTransformRunInput {
       deliveryOptions {
         handle
         title
-        description
         cost {
           amount
-          currencyCode
         }
       }
     }
