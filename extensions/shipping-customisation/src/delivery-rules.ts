@@ -38,16 +38,19 @@ export type RestOfUkRuleKind =
 export interface ServiceDefinition {
   key: ServiceKey;
   title: string;
+  description: string;
 }
 
 export interface ConfiguredService {
   key: ServiceKey;
   price?: number;
   title?: string;
+  description?: string;
 }
 
 export interface ExpectedService extends ConfiguredService {
   title: string;
+  description: string;
   normalizedTitle: string;
 }
 
@@ -75,66 +78,81 @@ const SERVICE_CATALOG: Record<ServiceKey, ServiceDefinition> = {
   free_ground_floor_delivery: {
     key: "free_ground_floor_delivery",
     title: "Free Ground Floor Delivery",
+    description: "Ground floor only",
   },
   free_delivery: {
     key: "free_delivery",
     title: "Free Delivery",
+    description: "Standard delivery",
   },
   unpack_and_dispose_packaging: {
     key: "unpack_and_dispose_packaging",
     title: "Unpack & Dispose Packaging",
+    description: "Unpack and dispose packaging",
   },
   install_appliance: {
     key: "install_appliance",
     title:
       "Install Your Appliance (Must be a like for like appliance & existing pipework all ready)",
+    description: "Professional fitting",
   },
   fitting_of_new_appliance: {
     key: "fitting_of_new_appliance",
     title: "Fitting Of New Appliance",
+    description: "Professional fitting",
   },
   disposal_old_appliance: {
     key: "disposal_old_appliance",
     title: "Disposal Of Old Appliance (Must Be Disconnected)",
+    description: "Remove old appliance",
   },
   gas_safe_certificate: {
     key: "gas_safe_certificate",
     title: "Gas Safe Certificate",
+    description: "Gas safe certificate",
   },
   full_service: {
     key: "full_service",
     title:
       "Full Service (Delivery / Fitting & Disposal Of Old Appliance / Doesn't Include Disposal Of Packaging)",
+    description: "Delivery fitting and disposal of old appliance",
   },
   doors_off: {
     key: "doors_off",
     title: "Doors Off To Fit In Property",
+    description: "Doors off service",
   },
   first_floor_delivery: {
     key: "first_floor_delivery",
     title: "1st Floor Delivery (No Lift)",
+    description: "Carry to first floor with no lift",
   },
   first_floor_manual_contact: {
     key: "first_floor_manual_contact",
     title:
       "1st Floor Delivery (No Lift) - Our Sales Team Will Get In Touch",
+    description: "Manual confirmation required",
   },
   second_floor_manual_contact: {
     key: "second_floor_manual_contact",
     title:
       "2nd Floor Or More Delivery (No Lift) - Our Sales Team Will Get In Touch",
+    description: "Manual confirmation required",
   },
   two_man_delivery_team: {
     key: "two_man_delivery_team",
     title: "1/2 Man Delivery Team (2 - 10 Working Days)",
+    description: "Standard mainland delivery",
   },
   pallet_delivery: {
     key: "pallet_delivery",
     title: "Pallet Delivery (Kurbside Only & 1 - 3 Working Day Delivery)",
+    description: "Kerbside pallet delivery",
   },
   next_day_parcel_delivery: {
     key: "next_day_parcel_delivery",
     title: "Next Day Parcel Delivery",
+    description: "Parcel delivery",
   },
 };
 
@@ -350,11 +368,14 @@ export function buildExpectedService(
 ): ExpectedService {
   const serviceDefinition = SERVICE_CATALOG[configuredService.key];
   const title = configuredService.title ?? serviceDefinition.title;
+  const description =
+    configuredService.description ?? serviceDefinition.description;
 
   return {
     key: configuredService.key,
     price: configuredService.price,
     title,
+    description,
     normalizedTitle: normalizeServiceText(title),
   };
 }

@@ -532,7 +532,7 @@ function buildCarrierServiceRate(
     service_code: `${expectedService.key}_${toMinorUnits(expectedService.price)}`,
     total_price: String(toMinorUnits(expectedService.price)),
     currency,
-    description: expectedService.title,
+    description: expectedService.description,
   };
 }
 

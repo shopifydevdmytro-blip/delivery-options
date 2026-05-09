@@ -115,7 +115,7 @@ test("returns a single base LE service for mixed delivery groups", () => {
   assert.deepEqual(response.rates, [
     {
       currency: "GBP",
-      description: "Free Ground Floor Delivery",
+      description: "Ground floor only",
       service_code: "free_ground_floor_delivery_0",
       service_name: "Free Ground Floor Delivery",
       total_price: "0",
@@ -161,7 +161,7 @@ test("returns paid parcel delivery for small appliances under the threshold", ()
   assert.deepEqual(response.rates, [
     {
       currency: "GBP",
-      description: "Next Day Parcel Delivery",
+      description: "Parcel delivery",
       service_code: "next_day_parcel_delivery_499",
       service_name: "Next Day Parcel Delivery",
       total_price: "499",
@@ -185,7 +185,7 @@ test("returns free delivery for small appliances over the threshold", () => {
   assert.deepEqual(response.rates, [
     {
       currency: "GBP",
-      description: "Free Delivery",
+      description: "Standard delivery",
       service_code: "free_delivery_0",
       service_name: "Free Delivery",
       total_price: "0",
@@ -212,7 +212,7 @@ test("returns free delivery for high margin products outside LE", () => {
   assert.deepEqual(response.rates, [
     {
       currency: "GBP",
-      description: "Free Delivery",
+      description: "Standard delivery",
       service_code: "free_delivery_0",
       service_name: "Free Delivery",
       total_price: "0",
