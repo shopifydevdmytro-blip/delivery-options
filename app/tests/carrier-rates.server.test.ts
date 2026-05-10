@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import {
   buildCarrierRateResponse,
   type CarrierServiceRequestPayload,
+  fetchProductMetadataForCarrierItems,
 } from "../carrier-rates.server.ts";
+import db from "../db.server.ts";
 
 function createLookup({
   product = {},
@@ -68,6 +70,15 @@ function createPayload({
       },
     },
   };
+}
+
+function createJsonResponse(body: unknown, init: ResponseInit = {}): Response {
+  return new Response(JSON.stringify(body), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    ...init,
+  });
 }
 
 test("returns LE local services for a single freestanding laundry product", () => {
@@ -275,4 +286,183 @@ test("returns no rates for unsupported countries", () => {
   );
 
   assert.deepEqual(response, { rates: [] });
+});
+
+test("refreshes an expired offline session before fetching product metadata", async () => {
+  const originalFetch = global.fetch;
+  const sessionModel = db.session as typeof db.session & {
+    update: typeof db.session.update;
+  };
+  const originalUpdate = sessionModel.update;
+  const originalApiKey = process.env.SHOPIFY_API_KEY;
+  const originalApiSecret = process.env.SHOPIFY_API_SECRET;
+
+  process.env.SHOPIFY_API_KEY = "test-api-key";
+  process.env.SHOPIFY_API_SECRET = "test-api-secret";
+
+  const fetchCalls: Array<{ url: string; init?: RequestInit }> = [];
+
+  global.fetch = (async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const url = typeof input === "string" ? input : input.toString();
+    fetchCalls.push({ url, init });
+
+    if (url.endsWith("/admin/oauth/access_token")) {
+      return createJsonResponse({
+        access_token: "fresh-token",
+        expires_in: 3600,
+        refresh_token: "fresh-refresh-token",
+        refresh_token_expires_in: 7776000,
+      });
+    }
+
+    return createJsonResponse({
+      data: {
+        nodes: [
+          {
+            __typename: "Product",
+            id: "gid://shopify/Product/1",
+            metafield: { value: "freestanding_laundry" },
+            highMarginFreeDeliveryMetafield: { value: "true" },
+          },
+        ],
+      },
+    });
+  }) as typeof global.fetch;
+
+  sessionModel.update = (async () => ({
+    id: "offline_example.myshopify.com",
+    shop: "example.myshopify.com",
+    accessToken: "fresh-token",
+    expires: new Date(Date.now() + 3600_000),
+    refreshToken: "fresh-refresh-token",
+    refreshTokenExpires: new Date(Date.now() + 7_776_000_000),
+  })) as unknown as typeof db.session.update;
+
+  try {
+    const lookup = await fetchProductMetadataForCarrierItems(
+      {
+        id: "offline_example.myshopify.com",
+        shop: "example.myshopify.com",
+        accessToken: "expired-token",
+        expires: new Date(Date.now() - 60_000),
+        refreshToken: "refresh-token",
+        refreshTokenExpires: new Date(Date.now() + 3_600_000),
+      },
+      [{ product_id: 1 }],
+    );
+
+    assert.equal(fetchCalls.length, 2);
+    assert.match(fetchCalls[0]!.url, /\/admin\/oauth\/access_token$/);
+    assert.match(fetchCalls[1]!.url, /\/graphql\.json$/);
+    assert.equal(
+      fetchCalls[1]!.init?.headers
+        ? (fetchCalls[1]!.init!.headers as Record<string, string>)[
+            "X-Shopify-Access-Token"
+          ]
+        : undefined,
+      "fresh-token",
+    );
+    assert.equal(
+      lookup.byProductId.get("1")?.deliveryGroup,
+      "freestanding_laundry",
+    );
+  } finally {
+    global.fetch = originalFetch;
+    sessionModel.update = originalUpdate;
+    process.env.SHOPIFY_API_KEY = originalApiKey;
+    process.env.SHOPIFY_API_SECRET = originalApiSecret;
+  }
+});
+
+test("retries the Shopify Admin API request once after a 401 by refreshing the offline session", async () => {
+  const originalFetch = global.fetch;
+  const sessionModel = db.session as typeof db.session & {
+    update: typeof db.session.update;
+  };
+  const originalUpdate = sessionModel.update;
+  const originalApiKey = process.env.SHOPIFY_API_KEY;
+  const originalApiSecret = process.env.SHOPIFY_API_SECRET;
+
+  process.env.SHOPIFY_API_KEY = "test-api-key";
+  process.env.SHOPIFY_API_SECRET = "test-api-secret";
+
+  let graphqlCallCount = 0;
+
+  global.fetch = (async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const url = typeof input === "string" ? input : input.toString();
+
+    if (url.endsWith("/graphql.json")) {
+      graphqlCallCount += 1;
+
+      if (graphqlCallCount === 1) {
+        return createJsonResponse(
+          { errors: ["unauthorized"] },
+          { status: 401 },
+        );
+      }
+
+      return createJsonResponse({
+        data: {
+          nodes: [
+            {
+              __typename: "Product",
+              id: "gid://shopify/Product/1",
+              metafield: { value: "small_appliances" },
+              highMarginFreeDeliveryMetafield: { value: null },
+            },
+          ],
+        },
+      });
+    }
+
+    return createJsonResponse({
+      access_token: "fresh-token",
+      expires_in: 3600,
+      refresh_token: "fresh-refresh-token",
+      refresh_token_expires_in: 7776000,
+    });
+  }) as typeof global.fetch;
+
+  let updateCallCount = 0;
+  sessionModel.update = (async () => {
+    updateCallCount += 1;
+
+    return {
+      id: "offline_example.myshopify.com",
+      shop: "example.myshopify.com",
+      accessToken: "fresh-token",
+      expires: new Date(Date.now() + 3600_000),
+      refreshToken: "fresh-refresh-token",
+      refreshTokenExpires: new Date(Date.now() + 7_776_000_000),
+    };
+  }) as unknown as typeof db.session.update;
+
+  try {
+    const lookup = await fetchProductMetadataForCarrierItems(
+      {
+        id: "offline_example.myshopify.com",
+        shop: "example.myshopify.com",
+        accessToken: "stale-token",
+        expires: new Date(Date.now() + 3600_000),
+        refreshToken: "refresh-token",
+        refreshTokenExpires: new Date(Date.now() + 3_600_000),
+      },
+      [{ product_id: 1 }],
+    );
+
+    assert.equal(graphqlCallCount, 2);
+    assert.equal(updateCallCount, 1);
+    assert.equal(lookup.byProductId.get("1")?.deliveryGroup, "small_appliances");
+  } finally {
+    global.fetch = originalFetch;
+    sessionModel.update = originalUpdate;
+    process.env.SHOPIFY_API_KEY = originalApiKey;
+    process.env.SHOPIFY_API_SECRET = originalApiSecret;
+  }
 });

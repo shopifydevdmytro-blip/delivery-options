@@ -15,6 +15,7 @@ import { classifyDeliveryLocation } from "../extensions/shared/delivery/postcode
 
 const ADMIN_API_VERSION = "2026-01";
 const SHOPIFY_NODE_LIMIT = 250;
+const OFFLINE_TOKEN_EXPIRY_BUFFER_MS = 60_000;
 const TEST_STORE_PREFIX = "test-store-";
 
 type ProductMetafieldValue = string | null | undefined;
@@ -65,9 +66,13 @@ interface CarrierProductMetadataLookup {
   byVariantId: Map<string, CarrierRateLineMetadata>;
 }
 
-interface OfflineSessionRecord {
+export interface OfflineSessionRecord {
+  id?: string;
   shop: string;
   accessToken: string;
+  expires?: Date | null;
+  refreshToken?: string | null;
+  refreshTokenExpires?: Date | null;
 }
 
 interface DeliveryProfile {
@@ -82,6 +87,13 @@ export interface CarrierRatesDependencies {
   ) => Promise<CarrierProductMetadataLookup>;
   getOfflineSession: (request: Request) => Promise<OfflineSessionRecord>;
   log: (message: string, payload: string) => void;
+}
+
+interface RefreshedOfflineTokenResponse {
+  access_token?: string;
+  expires_in?: number;
+  refresh_token?: string;
+  refresh_token_expires_in?: number;
 }
 
 const DEFAULT_CARRIER_RATES_DEPENDENCIES: CarrierRatesDependencies = {
@@ -170,7 +182,14 @@ async function getOfflineSessionForCarrierRequest(
   if (explicitShop) {
     const explicitSession = await db.session.findUnique({
       where: { id: `offline_${explicitShop}` },
-      select: { shop: true, accessToken: true },
+      select: {
+        id: true,
+        shop: true,
+        accessToken: true,
+        expires: true,
+        refreshToken: true,
+        refreshTokenExpires: true,
+      },
     });
 
     if (explicitSession) {
@@ -184,7 +203,14 @@ async function getOfflineSessionForCarrierRequest(
         isOnline: false,
         shop: headerShop,
       },
-      select: { shop: true, accessToken: true },
+      select: {
+        id: true,
+        shop: true,
+        accessToken: true,
+        expires: true,
+        refreshToken: true,
+        refreshTokenExpires: true,
+      },
     });
 
     if (headerSession) {
@@ -204,7 +230,14 @@ async function getOfflineSessionForCarrierRequest(
     orderBy: {
       shop: "asc",
     },
-    select: { shop: true, accessToken: true },
+    select: {
+      id: true,
+      shop: true,
+      accessToken: true,
+      expires: true,
+      refreshToken: true,
+      refreshTokenExpires: true,
+    },
   });
 
   if (preferredSession) {
@@ -218,7 +251,14 @@ async function getOfflineSessionForCarrierRequest(
     orderBy: {
       shop: "asc",
     },
-    select: { shop: true, accessToken: true },
+    select: {
+      id: true,
+      shop: true,
+      accessToken: true,
+      expires: true,
+      refreshToken: true,
+      refreshTokenExpires: true,
+    },
   });
 
   if (!fallbackSession) {
@@ -228,7 +268,7 @@ async function getOfflineSessionForCarrierRequest(
   return fallbackSession;
 }
 
-async function fetchProductMetadataForCarrierItems(
+export async function fetchProductMetadataForCarrierItems(
   session: OfflineSessionRecord,
   items: CarrierServiceLineItem[],
 ): Promise<CarrierProductMetadataLookup> {
@@ -242,14 +282,37 @@ async function fetchProductMetadataForCarrierItems(
     return lookup;
   }
 
+  let activeSession = await refreshOfflineSessionIfNeeded(session);
+  let hasRetriedUnauthorizedRequest = false;
+
   for (let index = 0; index < nodeIds.length; index += SHOPIFY_NODE_LIMIT) {
     const ids = nodeIds.slice(index, index + SHOPIFY_NODE_LIMIT);
-    const response = await fetchShopifyAdminGraphql<CarrierNodesQueryResponse>({
-      accessToken: session.accessToken,
-      query: CARRIER_PRODUCT_METADATA_QUERY,
-      shop: session.shop,
-      variables: { ids },
-    });
+    let response: CarrierNodesQueryResponse;
+
+    while (true) {
+      try {
+        response = await fetchShopifyAdminGraphql<CarrierNodesQueryResponse>({
+          accessToken: activeSession.accessToken,
+          query: CARRIER_PRODUCT_METADATA_QUERY,
+          shop: activeSession.shop,
+          variables: { ids },
+        });
+        break;
+      } catch (error) {
+        if (
+          error instanceof ShopifyAdminAuthenticationError &&
+          error.status === 401 &&
+          !hasRetriedUnauthorizedRequest &&
+          canRefreshOfflineSession(activeSession)
+        ) {
+          activeSession = await refreshOfflineSession(activeSession);
+          hasRetriedUnauthorizedRequest = true;
+          continue;
+        }
+
+        throw error;
+      }
+    }
 
     for (const node of response.data.nodes) {
       if (!node) {
@@ -293,6 +356,130 @@ async function fetchProductMetadataForCarrierItems(
   return lookup;
 }
 
+class ShopifyAdminAuthenticationError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ShopifyAdminAuthenticationError";
+    this.status = status;
+  }
+}
+
+function canRefreshOfflineSession(session: OfflineSessionRecord): boolean {
+  if (!session.refreshToken) {
+    return false;
+  }
+
+  if (!session.refreshTokenExpires) {
+    return true;
+  }
+
+  return session.refreshTokenExpires.getTime() > Date.now();
+}
+
+function shouldRefreshOfflineSession(session: OfflineSessionRecord): boolean {
+  if (!canRefreshOfflineSession(session) || !session.expires) {
+    return false;
+  }
+
+  return (
+    session.expires.getTime() <= Date.now() + OFFLINE_TOKEN_EXPIRY_BUFFER_MS
+  );
+}
+
+async function refreshOfflineSessionIfNeeded(
+  session: OfflineSessionRecord,
+): Promise<OfflineSessionRecord> {
+  if (!shouldRefreshOfflineSession(session)) {
+    return session;
+  }
+
+  return refreshOfflineSession(session);
+}
+
+async function refreshOfflineSession(
+  session: OfflineSessionRecord,
+): Promise<OfflineSessionRecord> {
+  if (!session.refreshToken) {
+    throw new Error("No refresh token is available for the offline Shopify session");
+  }
+
+  if (session.refreshTokenExpires) {
+    const refreshTokenExpiresAt = session.refreshTokenExpires.getTime();
+
+    if (refreshTokenExpiresAt <= Date.now()) {
+      throw new Error(
+        "The offline Shopify refresh token has expired and the app must be re-authorized",
+      );
+    }
+  }
+
+  const apiKey = process.env.SHOPIFY_API_KEY;
+  const apiSecret = process.env.SHOPIFY_API_SECRET;
+
+  if (!apiKey || !apiSecret) {
+    throw new Error("Shopify API credentials are not configured for token refresh");
+  }
+
+  const response = await fetch(`https://${session.shop}/admin/oauth/access_token`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: apiKey,
+      client_secret: apiSecret,
+      grant_type: "refresh_token",
+      refresh_token: session.refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Shopify offline token refresh failed with status ${response.status}`,
+    );
+  }
+
+  const payload = (await response.json()) as RefreshedOfflineTokenResponse;
+  const accessToken = payload.access_token;
+  const refreshToken = payload.refresh_token;
+
+  if (!accessToken || !refreshToken) {
+    throw new Error("Shopify offline token refresh returned an incomplete payload");
+  }
+
+  const expires =
+    typeof payload.expires_in === "number"
+      ? new Date(Date.now() + payload.expires_in * 1000)
+      : null;
+  const refreshTokenExpires =
+    typeof payload.refresh_token_expires_in === "number"
+      ? new Date(Date.now() + payload.refresh_token_expires_in * 1000)
+      : null;
+  const sessionId = session.id ?? `offline_${session.shop}`;
+
+  await db.session.update({
+    where: { id: sessionId },
+    data: {
+      accessToken,
+      expires,
+      refreshToken,
+      refreshTokenExpires,
+    },
+  });
+
+  return {
+    ...session,
+    id: sessionId,
+    accessToken,
+    expires,
+    refreshToken,
+    refreshTokenExpires,
+  };
+}
+
 async function fetchShopifyAdminGraphql<T>({
   accessToken,
   query,
@@ -320,6 +507,13 @@ async function fetchShopifyAdminGraphql<T>({
   );
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new ShopifyAdminAuthenticationError(
+        response.status,
+        "Shopify Admin API request failed with status 401",
+      );
+    }
+
     throw new Error(
       `Shopify Admin API request failed with status ${response.status}`,
     );
