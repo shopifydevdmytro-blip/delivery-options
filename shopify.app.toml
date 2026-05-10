@@ -2,7 +2,7 @@
 
 client_id = "ba1b736a44e654ee46bc820211480e6c"
 name = "delivery-options-postcode"
-application_url = "https://example.com"
+application_url = "https://delivery-options-production.up.railway.app"
 embedded = true
 
 [build]
@@ -26,4 +26,4 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://delivery-options-production.up.railway.app/auth/callback" ]
